@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Document</title>
+  </head>
+  <body>
+    <iframe id="iframe" src="domain2.html" width="200" height="200"></iframe>
+    <script>
+      const iframe = document.querySelector("#iframe");
+
+      const CrossLocalStorage = function(currentWindow, iframe, onMessage) {
+        let childWindow;
+
+        try {
+          childWindow = iframe.contentWindow;
+        } catch (err) {
+          childWindow = iframe.contentWindow;
+        }
+
+        this.isAllowedOrigin = origin => {
+          return this.allowedOrigins.includes(origin);
+        };
+
+        this.getData = key => {
+          let messageData = {
+            key: key,
+            method: "get"
+          };
+          this.postMessage(messageData);
+        };
+
+        this.setData = (key, data) => {
+          const messageData = {
+            key: key,
+            method: "set",
+            data: data
+          };
+          this.postMessage(messageData);
+        };
+
+        this.removeData = key => {
+          let messageData = {
+            key: key,
+            method: "remove"
+          };
+          this.postMessage(messageData);
+        };
+
+        this.postMessage = messageData => {
+          childWindow.postMessage(JSON.stringify(messageData), "*");
+        };
+      };
+
+      window.onload = () => {
+        const onMessage = (payload, event) => {
+          const data = payload.data;
+          switch (payload.method) {
+            case "storage#get":
+              console.log("message data", payload);
+              break;
+            default:
+              console.log('incorrect method "' + payload.method + '"', payload);
+          }
+        };
+        const cross = new CrossLocalStorage(window, iframe, onMessage);
+        cross.setData("name", "Dima");
+        cross.getData("name");
+        cross.removeData("name");
+        cross.setData("age", "32");
+        cross.getData("age");
+      };
+    </script>
+  </body>
+</html>
